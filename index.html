@@ -2142,6 +2142,8 @@ a {
     }
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
 
 <body>
@@ -2888,51 +2890,14 @@ a {
                 </tr>
             </thead>
 
-            <tbody>
+            <tbody id="articleTableBody">
 
-                <tr data-search="future ai publishing">
-                    <td><div class="article-name">The Future of AI-Powered Publishing</div></td>
-                    <td>Artificial Intelligence</td>
-                    <td><span class="badge badge-purple">Scheduled</span></td>
-                    <td>—</td>
-                    <td>Today</td>
-                    <td><button class="btn btn-small" onclick="openModal('articleModal')">Edit</button></td>
-                </tr>
-
-                <tr data-search="technology trends">
-                    <td><div class="article-name">7 Emerging Technology Trends</div></td>
-                    <td>Technology</td>
-                    <td><span class="badge badge-yellow">Draft</span></td>
-                    <td>—</td>
-                    <td>Today</td>
-                    <td><button class="btn btn-small" onclick="openModal('articleModal')">Edit</button></td>
-                </tr>
-
-                <tr data-search="ai industry weekly">
-                    <td><div class="article-name">AI Industry Weekly</div></td>
-                    <td>AI</td>
-                    <td><span class="badge badge-green">Published</span></td>
-                    <td>48.2K</td>
-                    <td>1 day ago</td>
-                    <td><button class="btn btn-small" onclick="openModal('articleModal')">Edit</button></td>
-                </tr>
-
-                <tr data-search="future of search">
-                    <td><div class="article-name">The Future of Search</div></td>
-                    <td>SEO</td>
-                    <td><span class="badge badge-green">Published</span></td>
-                    <td>31.8K</td>
-                    <td>2 days ago</td>
-                    <td><button class="btn btn-small" onclick="openModal('articleModal')">Edit</button></td>
-                </tr>
-
-                <tr data-search="automation business">
-                    <td><div class="article-name">How Automation Is Reshaping Business</div></td>
-                    <td>Business</td>
-                    <td><span class="badge badge-blue">Review</span></td>
-                    <td>—</td>
-                    <td>3 days ago</td>
-                    <td><button class="btn btn-small" onclick="openModal('articleModal')">Review</button></td>
+                <tr>
+                    <td colspan="6">
+                        <div class="no-data" id="articleEmptyState">
+                            Loading articles...
+                        </div>
+                    </td>
                 </tr>
 
             </tbody>
@@ -3973,7 +3938,7 @@ a {
             <div class="form-group">
                 <label class="input-label">Category</label>
 
-                <select class="select" style="width:100%;">
+                <select class="select" id="newArticleCategory" style="width:100%;">
                     <option>Artificial Intelligence</option>
                     <option>Technology</option>
                     <option>Business</option>
@@ -3988,6 +3953,7 @@ a {
 
                 <textarea
                     class="textarea"
+                    id="newArticleContent"
                     style="min-height:180px;"
                     placeholder="Start writing or generate with AI..."
                 ></textarea>
@@ -4556,24 +4522,226 @@ function createFromNews(button) {
    SAVE ARTICLE
    ========================= */
 
-function saveArticle() {
+/* =========================
+   SUPABASE
+   ========================= */
 
-    const title =
-        document.getElementById("newArticleTitle").value.trim();
+const SUPABASE_URL = "https://gcplrhlqymuqouawtxzw.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_hzujhzYMQOLRO8VIu9ZaWw_CnjSvvNh";
 
-    if (!title) {
+const supabaseClient = window.supabase
+    ? window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+    )
+    : null;
 
-        showToast("Please enter an article title");
+function createSlug(value) {
+
+    return value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-");
+
+}
+
+function formatArticleDate(value) {
+
+    if (!value) return "—";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) return "—";
+
+    return date.toLocaleDateString([], {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+    });
+
+}
+
+function statusBadge(status) {
+
+    const normalized = (status || "draft").toLowerCase();
+
+    const classes = {
+        published: "badge-green",
+        scheduled: "badge-purple",
+        review: "badge-blue",
+        draft: "badge-yellow"
+    };
+
+    const label = normalized.charAt(0).toUpperCase() + normalized.slice(1);
+
+    return `<span class="badge ${classes[normalized] || "badge-yellow"}">${escapeHtml(label)}</span>`;
+
+}
+
+function renderArticles(articles) {
+
+    const body = document.getElementById("articleTableBody");
+
+    if (!body) return;
+
+    if (!articles.length) {
+
+        body.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    <div class="no-data">No articles in Supabase yet. Create your first draft.</div>
+                </td>
+            </tr>
+        `;
 
         return;
 
     }
 
+    body.innerHTML = articles.map(article => {
+
+        const title = article.title || "Untitled article";
+        const category = article.category || "Uncategorized";
+        const search = `${title} ${category} ${article.status || "draft"}`.toLowerCase();
+
+        return `
+            <tr data-search="${escapeHtml(search)}">
+                <td><div class="article-name">${escapeHtml(title)}</div></td>
+                <td>${escapeHtml(category)}</td>
+                <td>${statusBadge(article.status)}</td>
+                <td>—</td>
+                <td>${formatArticleDate(article.updated_at || article.created_at)}</td>
+                <td>
+                    <button class="btn btn-small" onclick="openModal('articleModal')">Edit</button>
+                </td>
+            </tr>
+        `;
+
+    }).join("");
+
+}
+
+async function loadArticles() {
+
+    if (!supabaseClient) {
+        showToast("Supabase client failed to load");
+        return;
+    }
+
+    const body = document.getElementById("articleTableBody");
+
+    if (body) {
+        body.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    <div class="no-data">Loading articles...</div>
+                </td>
+            </tr>
+        `;
+    }
+
+    const { data, error } = await supabaseClient
+        .from("articles")
+        .select("id, title, slug, content, excerpt, status, category, created_at, updated_at")
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        console.error("BlogOS Supabase load error:", error);
+
+        if (body) {
+            body.innerHTML = `
+                <tr>
+                    <td colspan="6">
+                        <div class="no-data">
+                            Could not load articles. Check your Supabase RLS policies.
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        return;
+    }
+
+    renderArticles(data || []);
+
+    const countLabel = document.querySelector("#articles .toolbar-right .muted");
+    if (countLabel) {
+        countLabel.textContent = `${(data || []).length} total articles`;
+    }
+
+}
+
+async function saveArticle() {
+
+    const titleInput = document.getElementById("newArticleTitle");
+    const categoryInput = document.getElementById("newArticleCategory");
+    const contentInput = document.getElementById("newArticleContent");
+
+    const title = titleInput.value.trim();
+    const category = categoryInput ? categoryInput.value : "Uncategorized";
+    const content = contentInput ? contentInput.value.trim() : "";
+
+    if (!title) {
+        showToast("Please enter an article title");
+        return;
+    }
+
+    if (!supabaseClient) {
+        showToast("Supabase client is not available");
+        return;
+    }
+
+    const button = document.querySelector("#articleModal .btn-primary");
+    const originalText = button ? button.textContent : "Save Draft";
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = "Saving...";
+    }
+
+    const excerpt = content
+        ? content.replace(/\s+/g, " ").trim().slice(0, 180)
+        : null;
+
+    const { error } = await supabaseClient
+        .from("articles")
+        .insert({
+            title,
+            slug: createSlug(title),
+            content: content || null,
+            excerpt,
+            status: "draft",
+            category,
+            updated_at: new Date().toISOString()
+        });
+
+    if (button) {
+        button.disabled = false;
+        button.textContent = originalText;
+    }
+
+    if (error) {
+        console.error("BlogOS Supabase save error:", error);
+        showToast("Could not save article. Check Supabase RLS policies.");
+        return;
+    }
+
     closeModal("articleModal");
 
-    showToast(`Draft "${title}" saved`);
+    titleInput.value = "";
+    if (contentInput) contentInput.value = "";
 
-    document.getElementById("newArticleTitle").value = "";
+    showToast(`Draft "${title}" saved to Supabase`);
+
+    addLog(
+        "SUCCESS",
+        `Article saved to Supabase: ${title}`
+    );
+
+    await loadArticles();
 
 }
 
@@ -4791,12 +4959,14 @@ document.querySelectorAll(".settings-tab")
    INITIALIZATION
    ========================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
     addLog(
         "SUCCESS",
         "BlogOS dashboard initialized successfully."
     );
+
+    await loadArticles();
 
 });
 
