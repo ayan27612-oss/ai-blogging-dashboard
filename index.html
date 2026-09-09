@@ -1421,7 +1421,11 @@ a {
    RESPONSIVE
    ========================= */
 
-@media (max-width: 1150px) {
+@media (max-width: 1200px) {
+    .content {
+        padding: 26px 24px;
+    }
+
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -1436,42 +1440,13 @@ a {
     }
 }
 
-@media (max-width: 800px) {
-    :root {
-        --sidebar: 0px;
-    }
-
-    .sidebar {
-        width: 250px;
-        transform: translateX(-100%);
-        transition: .25s ease;
-        box-shadow: 20px 0 50px rgba(0,0,0,.4);
-    }
-
-    .sidebar.open {
-        transform: translateX(0);
-    }
-
-    .main {
-        margin-left: 0;
-        width: 100%;
-    }
-
-    .mobile-menu {
-        display: grid;
+@media (max-width: 900px) {
+    .content {
+        padding: 22px 18px;
     }
 
     .topbar {
-        padding: 0 16px;
-    }
-
-    .content {
-        padding: 20px 15px;
-    }
-
-    .hero {
-        align-items: flex-start;
-        flex-direction: column;
+        padding: 0 18px;
     }
 
     .grid-2-equal,
@@ -1482,42 +1457,10 @@ a {
         grid-template-columns: 1fr;
     }
 
-    .table-card {
-        overflow-x: auto;
-    }
-
-    .table {
-        min-width: 700px;
-    }
-
-    .calendar-card {
-        overflow-x: auto;
-    }
-
-    .calendar-grid {
-        min-width: 650px;
-    }
-
-    .calendar-head {
-        min-width: 650px;
-    }
-
-    .search input {
-        width: 180px;
-    }
-}
-
-@media (max-width: 520px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .topbar .page-context {
-        display: none;
-    }
-
-    .hero h1 {
-        font-size: 27px;
+    .hero {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 16px;
     }
 
     .hero-actions {
@@ -1525,11 +1468,677 @@ a {
     }
 
     .hero-actions .btn {
-        flex: 1;
+        flex: 0 1 auto;
     }
 
-    .top-actions .icon-btn:not(.mobile-menu) {
+    .table-card {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table {
+        min-width: 720px;
+    }
+
+    .calendar-card {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .calendar-grid,
+    .calendar-head {
+        min-width: 650px;
+    }
+
+    .search input {
+        width: 220px;
+    }
+
+    .bar-row {
+        grid-template-columns: 95px 1fr 38px;
+    }
+}
+
+@media (max-width: 800px) {
+    :root {
+        --sidebar: 0px;
+    }
+
+    body.sidebar-open {
+        overflow: hidden;
+    }
+
+    .sidebar {
+        width: min(292px, 86vw);
+        transform: translate3d(-105%, 0, 0);
+        transition: transform .28s cubic-bezier(.22,.61,.36,1);
+        box-shadow: 20px 0 55px rgba(0,0,0,.48);
+        z-index: 200;
+        padding: 18px 13px;
+    }
+
+    .sidebar.open {
+        transform: translate3d(0, 0, 0);
+    }
+
+    .sidebar.open::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: min(292px, 86vw);
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,.52);
+        backdrop-filter: blur(2px);
+        z-index: -1;
+    }
+
+    .main {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .mobile-menu {
+        display: grid;
+        flex: 0 0 auto;
+    }
+
+    .topbar {
+        height: 64px;
+        padding: 0 14px;
+        gap: 10px;
+    }
+
+    .topbar > .flex {
+        min-width: 0;
+    }
+
+    .topbar .page-title {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 48vw;
+    }
+
+    .topbar .page-context {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 48vw;
+    }
+
+    .top-actions {
+        gap: 6px;
+        flex: 0 0 auto;
+    }
+
+    .content {
+        padding: 20px 14px 30px;
+        width: 100%;
+    }
+
+    .hero {
+        margin-bottom: 18px;
+    }
+
+    .hero h1 {
+        font-size: clamp(25px, 7vw, 31px);
+        letter-spacing: -1px;
+        line-height: 1.08;
+    }
+
+    .hero p {
+        font-size: 12px;
+        line-height: 1.55;
+        max-width: 650px;
+    }
+
+    .hero-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .hero-actions .btn {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .stat-card {
+        min-height: 122px;
+        padding: 14px;
+    }
+
+    .stat-top {
+        gap: 8px;
+        font-size: 10px;
+    }
+
+    .stat-top > span:first-child {
+        min-width: 0;
+        line-height: 1.35;
+    }
+
+    .stat-icon {
+        width: 27px;
+        height: 27px;
+        flex: 0 0 auto;
+    }
+
+    .stat-value {
+        font-size: 24px;
+        margin-top: 12px;
+    }
+
+    .stat-bottom {
+        flex-wrap: wrap;
+        gap: 4px 6px;
+        line-height: 1.3;
+    }
+
+    .grid-2,
+    .grid-2-equal,
+    .ai-grid,
+    .automation-grid,
+    .source-grid,
+    .metric-row,
+    .settings-grid {
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .card {
+        border-radius: 14px;
+    }
+
+    .card-head {
+        padding: 14px;
+        gap: 10px;
+    }
+
+    .card-head > * {
+        min-width: 0;
+    }
+
+    .card-body {
+        padding: 14px;
+    }
+
+    .card-title {
+        font-size: 12px;
+    }
+
+    .card-subtitle {
+        font-size: 9px;
+        line-height: 1.35;
+    }
+
+    .chart-wrap {
+        height: 190px;
+    }
+
+    .chart-labels {
+        font-size: 8px;
+        gap: 5px;
+    }
+
+    .chart-labels span:nth-child(even) {
         display: none;
+    }
+
+    .activity-item {
+        gap: 9px;
+        padding: 11px 0;
+    }
+
+    .activity-dot {
+        width: 28px;
+        height: 28px;
+    }
+
+    .activity-title {
+        font-size: 10px;
+        line-height: 1.4;
+    }
+
+    .activity-meta {
+        font-size: 8px;
+        line-height: 1.4;
+    }
+
+    .news-item {
+        gap: 9px;
+        padding: 11px 0;
+    }
+
+    .news-thumb {
+        width: 50px;
+        height: 40px;
+        border-radius: 8px;
+        font-size: 13px;
+    }
+
+    .news-title {
+        font-size: 10px;
+        line-height: 1.45;
+    }
+
+    .news-source {
+        font-size: 8px;
+        margin-top: 4px;
+    }
+
+    .score {
+        font-size: 9px;
+    }
+
+    .toolbar {
+        align-items: stretch;
+        gap: 8px;
+        margin-bottom: 13px;
+    }
+
+    .toolbar-left,
+    .toolbar-right {
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .toolbar-left > *,
+    .toolbar-right > * {
+        min-width: 0;
+    }
+
+    .search {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+
+    .search input {
+        width: 100%;
+        min-height: 42px;
+        font-size: 12px;
+        padding-left: 36px;
+    }
+
+    .select {
+        min-height: 40px;
+        font-size: 10px;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .toolbar-left .select,
+    .toolbar-right .select {
+        width: 100%;
+    }
+
+    .table-card {
+        border-radius: 13px;
+    }
+
+    .table {
+        min-width: 720px;
+    }
+
+    .table th {
+        padding: 11px 13px;
+        font-size: 8px;
+    }
+
+    .table td {
+        padding: 12px 13px;
+        font-size: 10px;
+    }
+
+    .article-name {
+        max-width: 330px;
+    }
+
+    .calendar-card {
+        border-radius: 13px;
+    }
+
+    .calendar-head {
+        min-width: 650px;
+        padding: 14px;
+    }
+
+    .calendar-grid {
+        min-width: 650px;
+    }
+
+    .day {
+        min-height: 88px;
+        padding: 7px;
+    }
+
+    .calendar-event {
+        font-size: 7px;
+        margin-top: 5px;
+    }
+
+    .automation-card {
+        padding: 14px;
+    }
+
+    .automation-top {
+        gap: 10px;
+    }
+
+    .automation-description {
+        font-size: 9px;
+    }
+
+    .automation-meta {
+        flex-wrap: wrap;
+        gap: 8px 12px;
+        margin-top: 13px;
+    }
+
+    .ai-editor {
+        min-height: auto;
+    }
+
+    .editor-area {
+        padding: 14px;
+    }
+
+    .textarea {
+        min-height: 220px;
+    }
+
+    .ai-tool {
+        padding: 12px;
+    }
+
+    .source-card {
+        padding: 14px;
+    }
+
+    .metric {
+        padding: 14px;
+    }
+
+    .metric-number {
+        font-size: 20px;
+    }
+
+    .bar-row {
+        grid-template-columns: 82px minmax(0, 1fr) 34px;
+        gap: 7px;
+    }
+
+    .log {
+        max-height: 360px;
+        padding: 12px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .log-line {
+        min-width: max-content;
+        font-size: 8px;
+    }
+
+    .settings-nav {
+        padding: 7px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .settings-nav .settings-tab {
+        white-space: nowrap;
+    }
+
+    .settings-content {
+        padding: 15px;
+    }
+
+    .setting-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+        padding: 14px 0;
+    }
+
+    .setting-desc {
+        max-width: none;
+    }
+
+    .setting-row > :last-child {
+        align-self: flex-start;
+        max-width: 100%;
+    }
+
+    .modal-overlay {
+        padding: 10px;
+        align-items: flex-end;
+    }
+
+    .modal {
+        width: 100%;
+        max-height: min(92vh, 760px);
+        border-radius: 18px 18px 12px 12px;
+    }
+
+    .modal-head {
+        padding: 14px 15px;
+    }
+
+    .modal-body {
+        padding: 15px;
+    }
+
+    .modal-foot {
+        padding: 12px 15px;
+        flex-wrap: wrap;
+    }
+
+    .modal-foot .btn {
+        flex: 1 1 120px;
+        min-height: 42px;
+    }
+
+    .input,
+    .textarea,
+    .select {
+        font-size: 12px;
+    }
+
+    .btn {
+        min-height: 40px;
+        padding: 9px 12px;
+    }
+
+    .btn-small {
+        min-height: 36px;
+        padding: 7px 9px;
+    }
+
+    .toast {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        min-width: 0;
+        width: auto;
+        max-width: none;
+    }
+}
+
+@media (max-width: 520px) {
+    .topbar {
+        height: 60px;
+        padding: 0 10px;
+    }
+
+    .topbar .page-title {
+        font-size: 13px;
+        max-width: 42vw;
+    }
+
+    .topbar .page-context {
+        display: none;
+    }
+
+    .top-actions .icon-btn:not(.mobile-menu),
+    .top-actions .avatar {
+        display: none;
+    }
+
+    .content {
+        padding: 17px 11px 28px;
+    }
+
+    .hero {
+        gap: 13px;
+    }
+
+    .hero h1 {
+        font-size: 25px;
+    }
+
+    .hero p {
+        font-size: 11px;
+        margin-top: 7px;
+    }
+
+    .hero-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .stat-card {
+        min-height: 116px;
+        padding: 12px;
+    }
+
+    .stat-value {
+        font-size: 22px;
+        margin-top: 10px;
+    }
+
+    .stat-bottom {
+        font-size: 9px;
+    }
+
+    .card-head {
+        padding: 12px;
+    }
+
+    .card-body {
+        padding: 12px;
+    }
+
+    .chart-wrap {
+        height: 165px;
+    }
+
+    .chart-labels span:nth-child(3),
+    .chart-labels span:nth-child(5) {
+        display: none;
+    }
+
+    .news-thumb {
+        width: 44px;
+        height: 36px;
+        font-size: 11px;
+    }
+
+    .news-title {
+        font-size: 9px;
+    }
+
+    .news-source {
+        font-size: 7px;
+    }
+
+    .score {
+        font-size: 8px;
+    }
+
+    .badge {
+        font-size: 8px;
+        padding: 4px 6px;
+    }
+
+    .bar-row {
+        grid-template-columns: 70px minmax(0, 1fr) 30px;
+        font-size: 8px;
+    }
+
+    .settings-content {
+        padding: 13px;
+    }
+
+    .settings-nav {
+        display: flex;
+        gap: 4px;
+    }
+
+    .settings-nav .settings-tab {
+        width: auto;
+        flex: 0 0 auto;
+        padding: 9px 10px;
+    }
+
+    .modal-overlay {
+        padding: 7px;
+    }
+
+    .modal {
+        max-height: 94vh;
+    }
+
+    .modal-body {
+        padding: 13px;
+    }
+
+    .modal-foot {
+        padding: 10px 13px;
+    }
+
+    .toast {
+        bottom: 9px;
+        left: 9px;
+        right: 9px;
+    }
+}
+
+@media (max-width: 360px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero h1 {
+        font-size: 23px;
+    }
+
+    .topbar .page-title {
+        max-width: 55vw;
+    }
+
+    .stat-card {
+        min-height: 110px;
+    }
+
+    .card-head {
+        gap: 7px;
+    }
+
+    .card-head .btn-small,
+    .card-head .select {
+        max-width: 46%;
     }
 }
 </style>
@@ -3639,14 +4248,86 @@ document.querySelectorAll("[data-view-link]").forEach(button => {
    MOBILE MENU
    ========================= */
 
-document.getElementById("mobileMenu")
-    .addEventListener("click", () => {
+/* =========================
+   MOBILE MENU
+   ========================= */
 
-        document
-            .getElementById("sidebar")
-            .classList.toggle("open");
+const mobileMenu =
+    document.getElementById("mobileMenu");
+
+const sidebar =
+    document.getElementById("sidebar");
+
+function setMobileMenu(open) {
+
+    if (!sidebar) return;
+
+    sidebar.classList.toggle("open", open);
+
+    document.body.classList.toggle(
+        "sidebar-open",
+        open && window.innerWidth <= 800
+    );
+
+    if (mobileMenu) {
+        mobileMenu.setAttribute(
+            "aria-expanded",
+            open ? "true" : "false"
+        );
+    }
+
+}
+
+if (mobileMenu && sidebar) {
+
+    mobileMenu.setAttribute("aria-expanded", "false");
+
+    mobileMenu.addEventListener("click", () => {
+
+        setMobileMenu(
+            !sidebar.classList.contains("open")
+        );
 
     });
+
+    document
+        .querySelectorAll(".nav-item")
+        .forEach(item => {
+
+            item.addEventListener("click", () => {
+
+                if (window.innerWidth <= 800) {
+                    setMobileMenu(false);
+                }
+
+            });
+
+        });
+
+    document.addEventListener("click", event => {
+
+        if (window.innerWidth > 800) return;
+
+        if (!sidebar.classList.contains("open")) return;
+
+        if (
+            !sidebar.contains(event.target) &&
+            !mobileMenu.contains(event.target)
+        ) {
+            setMobileMenu(false);
+        }
+
+    });
+
+    window.addEventListener("resize", () => {
+
+        if (window.innerWidth > 800) {
+            setMobileMenu(false);
+        }
+
+    });
+
+}
 
 
 /* =========================
