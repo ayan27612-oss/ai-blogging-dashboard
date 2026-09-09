@@ -2141,6 +2141,40 @@ a {
         max-width: 46%;
     }
 }
+
+/* =========================================================
+   BLOGOS MOTION SYSTEM — INTERACTION + DEPTH
+   ========================================================= */
+.view.active { animation: blogosViewIn .55s cubic-bezier(.22,1,.36,1) both; }
+@keyframes blogosViewIn { from { opacity:0; transform:translateY(16px) scale(.992); filter:blur(3px); } to { opacity:1; transform:none; filter:none; } }
+.sidebar { transition: transform .45s cubic-bezier(.22,1,.36,1), box-shadow .45s ease; }
+.nav-item { transition: transform .22s ease, background .22s ease, color .22s ease, box-shadow .22s ease; }
+.nav-item:hover { transform: translateX(4px); }
+.nav-item.active { box-shadow: inset 3px 0 0 var(--accent), 0 8px 30px rgba(124,92,255,.08); }
+.card, .stat-card, .hero, .table-card, .calendar-card, .automation-card, .source-card { animation: blogosRise .65s cubic-bezier(.22,1,.36,1) both; }
+@keyframes blogosRise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+.card:hover, .stat-card:hover { transform: translateY(-3px); transition: transform .25s ease, box-shadow .25s ease; box-shadow: 0 24px 70px rgba(0,0,0,.34); }
+.btn, .icon-btn, .toggle { transition: transform .18s ease, box-shadow .22s ease, background .22s ease, border-color .22s ease; position:relative; overflow:hidden; }
+.btn:hover, .icon-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(124,92,255,.16); }
+.btn:active, .icon-btn:active { transform: translateY(1px) scale(.97); }
+.btn.ripple::after { content:""; position:absolute; width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,.35); transform:scale(0); animation: blogosRipple .55s ease-out; pointer-events:none; }
+@keyframes blogosRipple { to { transform:scale(18); opacity:0; } }
+.logo-mark { animation: logoPulse 4s ease-in-out infinite; }
+@keyframes logoPulse { 0%,100% { box-shadow:0 8px 28px rgba(124,92,255,.28); } 50% { box-shadow:0 8px 42px rgba(124,92,255,.55); } }
+.toast { animation: none; }
+.toast.show { animation: toastIn .38s cubic-bezier(.22,1,.36,1) both; }
+@keyframes toastIn { from { opacity:0; transform:translateY(18px) scale(.96); } to { opacity:1; transform:none; } }
+.modal-overlay.open { animation: overlayIn .28s ease both; }
+.modal-overlay.open .modal { animation: modalIn .42s cubic-bezier(.22,1,.36,1) both; }
+@keyframes overlayIn { from { opacity:0; } to { opacity:1; } }
+@keyframes modalIn { from { opacity:0; transform:translateY(22px) scale(.94); filter:blur(4px); } to { opacity:1; transform:none; filter:none; } }
+.calendar-event { transition: transform .2s ease, box-shadow .2s ease; }
+.calendar-event:hover { transform:translateX(3px); box-shadow:0 8px 20px rgba(124,92,255,.18); }
+.log-line { animation: logIn .35s ease both; }
+@keyframes logIn { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:none; } }
+.input:focus, .textarea:focus, .select:focus { transform:translateY(-1px); box-shadow:0 0 0 3px rgba(124,92,255,.10), 0 12px 30px rgba(0,0,0,.18); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -4067,7 +4101,7 @@ a {
 
                 <label class="input-label">Article</label>
 
-                <select class="select" style="width:100%;">
+                <select class="select" id="scheduleArticle" style="width:100%;">
                     <option>The Future of AI-Powered Publishing</option>
                     <option>7 Emerging Technology Trends</option>
                     <option>Weekly Industry Intelligence Report</option>
@@ -4079,12 +4113,12 @@ a {
 
                 <div class="form-group">
                     <label class="input-label">Date</label>
-                    <input class="input" type="date" value="2026-09-09">
+                    <input class="input" id="scheduleDate" type="date" value="2026-09-09">
                 </div>
 
                 <div class="form-group">
                     <label class="input-label">Time</label>
-                    <input class="input" type="time" value="18:00">
+                    <input class="input" id="scheduleTime" type="time" value="18:00">
                 </div>
 
             </div>
@@ -4379,20 +4413,19 @@ document.addEventListener("keydown", event => {
    ========================= */
 
 document.getElementById("refreshBtn")
-    .addEventListener("click", () => {
-
+    .addEventListener("click", async () => {
         const button = document.getElementById("refreshBtn");
-
         button.style.transform = "rotate(360deg)";
-
-        setTimeout(() => {
-
+        button.disabled = true;
+        try {
+            await loadArticles();
+            await new Promise(resolve => setTimeout(resolve, 350));
+            showToast("Dashboard refreshed");
+            addLog("SUCCESS", "Dashboard data refreshed.");
+        } finally {
+            button.disabled = false;
             button.style.transform = "";
-
-        }, 400);
-
-        showToast("Dashboard refreshed");
-
+        }
     });
 
 
@@ -4751,11 +4784,38 @@ async function saveArticle() {
    ========================= */
 
 function schedulePost() {
-
+    const article = document.getElementById("scheduleArticle")?.value || "Untitled article";
+    const date = document.getElementById("scheduleDate")?.value;
+    const time = document.getElementById("scheduleTime")?.value;
+    if (!date || !time) {
+        showToast("Choose a date and time first");
+        return;
+    }
+    const items = JSON.parse(localStorage.getItem("blogosSchedules") || "[]");
+    items.unshift({ id: Date.now(), article, date, time });
+    localStorage.setItem("blogosSchedules", JSON.stringify(items));
     closeModal("scheduleModal");
+    showToast(`Scheduled for ${date} at ${time}`);
+    addLog("SUCCESS", `Scheduled: ${article} · ${date} ${time}`);
+    renderLocalSchedules();
+}
 
-    showToast("Post added to publishing calendar");
-
+function renderLocalSchedules() {
+    document.querySelectorAll(".calendar-event[data-local-id]").forEach(el => el.remove());
+    const items = JSON.parse(localStorage.getItem("blogosSchedules") || "[]");
+    items.forEach(item => {
+        const day = [...document.querySelectorAll("#calendar .day")].find(d => {
+            const n = d.querySelector(".day-number")?.textContent.trim();
+            return n === String(Number(item.date.slice(-2)));
+        });
+        if (day) {
+            const ev = document.createElement("div");
+            ev.className = "calendar-event";
+            ev.dataset.localId = item.id;
+            ev.textContent = `${item.article} · ${item.time}`;
+            day.appendChild(ev);
+        }
+    });
 }
 
 
@@ -4846,16 +4906,18 @@ function simulateScan() {
    ========================= */
 
 function runAllAutomations() {
-
-    addLog(
-        "SUCCESS",
-        "Enabled automation workflows triggered manually."
-    );
-
-    showToast(
-        "Enabled automations started"
-    );
-
+    const enabled = [...document.querySelectorAll(".toggle")].filter(t => t.classList.contains("on"));
+    if (!enabled.length) {
+        showToast("No automations are enabled");
+        return;
+    }
+    enabled.forEach((toggle, index) => {
+        setTimeout(() => {
+            const name = toggle.dataset.name || "Automation";
+            addLog("SUCCESS", `${name} workflow executed.`);
+        }, index * 180);
+    });
+    showToast(`${enabled.length} enabled automation${enabled.length === 1 ? "" : "s"} started`);
 }
 
 
@@ -4956,18 +5018,81 @@ document.querySelectorAll(".settings-tab")
 
 
 /* =========================
+   MICRO INTERACTIONS + PERSISTENCE
+   ========================= */
+
+document.addEventListener("click", event => {
+    const button = event.target.closest("button");
+    if (!button || button.disabled) return;
+    button.classList.remove("ripple");
+    void button.offsetWidth;
+    button.classList.add("ripple");
+});
+
+function persistToggles() {
+    const state = {};
+    document.querySelectorAll(".toggle").forEach((toggle, i) => {
+        state[i] = toggle.classList.contains("on");
+    });
+    localStorage.setItem("blogosToggles", JSON.stringify(state));
+}
+
+function restoreToggles() {
+    try {
+        const state = JSON.parse(localStorage.getItem("blogosToggles") || "{}");
+        document.querySelectorAll(".toggle").forEach((toggle, i) => {
+            if (typeof state[i] === "boolean") toggle.classList.toggle("on", state[i]);
+        });
+    } catch (_) {}
+}
+
+// Patch toggle behavior to persist the user's workspace state.
+document.querySelectorAll(".toggle").forEach(toggle => {
+    toggle.addEventListener("click", persistToggles);
+});
+
+// Keyboard shortcuts: / focuses the current page search, Esc closes overlays.
+document.addEventListener("keydown", event => {
+    if (event.key === "/" && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) {
+        const target = document.querySelector("#articles .search-input, #news .search-input, input[id*=Search], input[id*=search]");
+        if (target) { event.preventDefault(); target.focus(); }
+    }
+});
+
+function animateDashboardNumbers() {
+    document.querySelectorAll(".stat-value").forEach(el => {
+        const raw = el.textContent.trim();
+        const match = raw.match(/([0-9][0-9,]*)/);
+        if (!match) return;
+        const target = Number(match[1].replaceAll(",", ""));
+        if (!Number.isFinite(target) || target > 1000000) return;
+        const suffix = raw.replace(match[1], "");
+        let start = 0;
+        const duration = 800;
+        const t0 = performance.now();
+        const tick = now => {
+            const p = Math.min(1, (now - t0) / duration);
+            const eased = 1 - Math.pow(1 - p, 3);
+            el.textContent = Math.round(start + (target - start) * eased).toLocaleString() + suffix;
+            if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+    });
+}
+
+/* =========================
    INITIALIZATION
    ========================= */
 
 document.addEventListener("DOMContentLoaded", async () => {
-
-    addLog(
-        "SUCCESS",
-        "BlogOS dashboard initialized successfully."
-    );
-
+    restoreToggles();
+    renderLocalSchedules();
+    animateDashboardNumbers();
+    document.querySelectorAll(".view.active .card, .view.active .stat-card").forEach((el, i) => {
+        el.style.animationDelay = `${Math.min(i * 55, 330)}ms`;
+    });
+    addLog("SUCCESS", "BlogOS dashboard initialized successfully.");
     await loadArticles();
-
 });
 
 </script>
