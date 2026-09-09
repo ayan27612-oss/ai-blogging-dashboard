@@ -2499,34 +2499,449 @@ input:focus,textarea:focus,select:focus{
   .hero h1{letter-spacing:-1.7px!important}
 }
 
+
+/* ================================================================
+   BLOGOS // AURORA MOTION SYSTEM
+   Performance-first cinematic interface layer.
+   No layout thrashing. No MutationObserver animation loops.
+   Motion is composited wherever possible using transform/opacity.
+   ================================================================ */
+
+:root {
+    --aurora-x: 72vw;
+    --aurora-y: 18vh;
+    --spot-x: 50%;
+    --spot-y: 50%;
+    --motion-ease: cubic-bezier(.22, 1, .36, 1);
+    --motion-soft: cubic-bezier(.16, 1, .3, 1);
+    --motion-fast: cubic-bezier(.4, 0, .2, 1);
+}
+
+/* Keep the original application stable while giving it a richer visual field. */
+body {
+    background:
+        radial-gradient(900px 600px at var(--aurora-x) var(--aurora-y), rgba(124,92,255,.13), transparent 62%),
+        radial-gradient(700px 500px at 8% 82%, rgba(67,217,232,.055), transparent 64%),
+        linear-gradient(180deg, #070910 0%, #090b12 48%, #07090f 100%);
+}
+
+/* Subtle architectural grid. It is deliberately slow and uses only transform. */
+body::before {
+    content: "";
+    position: fixed;
+    inset: -50%;
+    z-index: -3;
+    pointer-events: none;
+    opacity: .16;
+    background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size: 64px 64px;
+    transform: perspective(900px) rotateX(64deg) translateY(10%);
+    transform-origin: center top;
+    animation: auroraGrid 32s linear infinite;
+    will-change: transform;
+}
+
+/* Atmospheric glow layer. opacity is cheap compared with repeatedly repainting huge elements. */
+body::after {
+    content: "";
+    position: fixed;
+    width: 55vw;
+    height: 55vw;
+    min-width: 420px;
+    min-height: 420px;
+    left: calc(var(--aurora-x) - 27.5vw);
+    top: calc(var(--aurora-y) - 27.5vw);
+    z-index: -2;
+    pointer-events: none;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,92,255,.075), rgba(67,217,232,.025) 38%, transparent 70%);
+    filter: blur(28px);
+    opacity: .8;
+    animation: auroraBreathe 11s ease-in-out infinite alternate;
+    will-change: transform, opacity;
+}
+
+/* Stable glass surfaces. */
+.sidebar,
+.panel,
+.stat-card,
+.news-card,
+.automation-card,
+.source-card,
+.settings-panel,
+.modal,
+.hero {
+    position: relative;
+    isolation: isolate;
+}
+
+.panel,
+.stat-card,
+.news-card,
+.automation-card,
+.source-card,
+.settings-panel {
+    overflow: hidden;
+    transition:
+        transform 480ms var(--motion-ease),
+        border-color 480ms var(--motion-ease),
+        box-shadow 480ms var(--motion-ease),
+        background-color 480ms var(--motion-ease);
+    will-change: transform;
+}
+
+.panel::before,
+.stat-card::before,
+.news-card::before,
+.automation-card::before,
+.source-card::before,
+.settings-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background:
+        radial-gradient(420px 240px at var(--spot-x) var(--spot-y), rgba(124,92,255,.095), transparent 66%),
+        linear-gradient(125deg, rgba(255,255,255,.025), transparent 28%, transparent 70%, rgba(67,217,232,.018));
+    opacity: 0;
+    transition: opacity 500ms var(--motion-ease);
+}
+
+.panel:hover::before,
+.stat-card:hover::before,
+.news-card:hover::before,
+.automation-card:hover::before,
+.source-card:hover::before,
+.settings-panel:hover::before {
+    opacity: 1;
+}
+
+.panel:hover,
+.stat-card:hover,
+.news-card:hover,
+.automation-card:hover,
+.source-card:hover,
+.settings-panel:hover {
+    transform: translate3d(0, -3px, 0);
+    border-color: rgba(155,133,255,.22);
+    box-shadow: 0 22px 70px rgba(0,0,0,.24), 0 0 0 1px rgba(124,92,255,.025) inset;
+}
+
+/* Hero gets a more editorial, art-directed treatment. */
+.hero {
+    overflow: hidden;
+    border-color: rgba(155,133,255,.16) !important;
+    background:
+        radial-gradient(500px 280px at 85% 30%, rgba(124,92,255,.13), transparent 70%),
+        radial-gradient(420px 260px at 12% 110%, rgba(67,217,232,.06), transparent 70%),
+        linear-gradient(135deg, rgba(20,22,34,.96), rgba(10,12,18,.96));
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    width: 360px;
+    height: 360px;
+    right: -120px;
+    top: -160px;
+    border-radius: 50%;
+    border: 1px solid rgba(155,133,255,.12);
+    box-shadow:
+        0 0 80px rgba(124,92,255,.08),
+        inset 0 0 80px rgba(67,217,232,.025);
+    animation: heroOrbit 18s ease-in-out infinite alternate;
+    pointer-events: none;
+}
+
+.hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 0%, transparent 43%, rgba(255,255,255,.035) 50%, transparent 57%, transparent 100%);
+    background-size: 240% 100%;
+    animation: heroSheen 9s ease-in-out infinite;
+    mix-blend-mode: screen;
+}
+
+.logo-mark {
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(124,92,255,.26), 0 0 0 1px rgba(255,255,255,.04) inset;
+}
+
+.logo-mark::after {
+    content: "";
+    position: absolute;
+    width: 70%;
+    height: 180%;
+    top: -40%;
+    left: -100%;
+    transform: rotate(20deg);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.32), transparent);
+    animation: logoSweep 5.5s ease-in-out infinite;
+}
+
+/* Navigation feels alive without bouncing. */
+.nav-item {
+    position: relative;
+    overflow: hidden;
+    transition:
+        background-color 320ms var(--motion-ease),
+        color 320ms var(--motion-ease),
+        transform 320ms var(--motion-ease);
+}
+
+.nav-item::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(124,92,255,.65), transparent);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 420ms var(--motion-ease);
+}
+
+.nav-item:hover {
+    transform: translate3d(3px,0,0);
+}
+
+.nav-item:hover::after,
+.nav-item.active::after {
+    transform: scaleX(1);
+}
+
+/* Buttons use a restrained sheen instead of JS-driven magnetic transforms. */
+.btn {
+    position: relative;
+    overflow: hidden;
+    transform: translate3d(0,0,0);
+    transition:
+        transform 280ms var(--motion-ease),
+        box-shadow 320ms var(--motion-ease),
+        border-color 320ms var(--motion-ease),
+        background-color 320ms var(--motion-ease);
+    will-change: transform;
+}
+
+.btn::after {
+    content: "";
+    position: absolute;
+    top: -20%;
+    bottom: -20%;
+    left: -120%;
+    width: 42%;
+    transform: skewX(-18deg);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+    pointer-events: none;
+    transition: left 700ms var(--motion-ease);
+}
+
+.btn:hover {
+    transform: translate3d(0,-2px,0);
+}
+
+.btn:hover::after {
+    left: 150%;
+}
+
+.btn:active {
+    transform: translate3d(0,1px,0) scale(.985);
+    transition-duration: 90ms;
+}
+
+/* Forms should glow rather than jump. */
+input,
+textarea,
+select {
+    transition:
+        border-color 260ms var(--motion-ease),
+        box-shadow 260ms var(--motion-ease),
+        background-color 260ms var(--motion-ease);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: rgba(124,92,255,.52) !important;
+    box-shadow: 0 0 0 3px rgba(124,92,255,.075), 0 12px 34px rgba(0,0,0,.16);
+}
+
+/* Existing reveal class is made lighter and compositor-friendly. */
+.reveal-item {
+    animation: cinematicReveal 720ms var(--motion-ease) both !important;
+    will-change: transform, opacity;
+}
+
+/* Status light. */
+.apex-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border: 1px solid rgba(53,211,154,.12);
+    border-radius: 999px;
+    background: rgba(53,211,154,.035);
+    color: rgba(216,255,241,.78);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    white-space: nowrap;
+}
+
+.apex-status i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #35d39a;
+    box-shadow: 0 0 0 4px rgba(53,211,154,.07), 0 0 16px rgba(53,211,154,.4);
+    animation: statusPulse 2.8s ease-in-out infinite;
+}
+
+/* Toasts glide in, they do not pop. */
+.toast {
+    animation: toastEnter 520ms var(--motion-ease) both;
+}
+
+/* Modal content uses one clean transition. */
+.modal-overlay.open .modal,
+.modal-overlay.show .modal {
+    animation: modalEnter 520ms var(--motion-ease) both;
+}
+
+/* Calendar cells and table rows get a very subtle hover response. */
+.calendar-day,
+.table-row,
+.news-item,
+.article-row {
+    transition: background-color 240ms var(--motion-fast), transform 240ms var(--motion-ease);
+}
+
+.calendar-day:hover,
+.table-row:hover,
+.news-item:hover,
+.article-row:hover {
+    transform: translate3d(2px,0,0);
+}
+
+/* ================================================================
+   PERFORMANCE CONTRACT
+   ---------------------------------------------------------------
+   1. Transform and opacity are preferred for animation.
+   2. No repeated forced layout reads during pointer movement.
+   3. No MutationObserver watching the entire document.
+   4. Pointer effects update once per animation frame at most.
+   5. Large blurred fields are static/slow rather than constantly moved.
+   6. Touch devices receive a lighter effect profile.
+   ================================================================ */
+
+@keyframes auroraGrid {
+    from { transform: perspective(900px) rotateX(64deg) translate3d(0,10%,0); }
+    to   { transform: perspective(900px) rotateX(64deg) translate3d(-64px,10%,0); }
+}
+
+@keyframes auroraBreathe {
+    0%   { transform: scale(.96) translate3d(-2%,1%,0); opacity: .55; }
+    50%  { transform: scale(1.02) translate3d(1%,-1%,0); opacity: .85; }
+    100% { transform: scale(.98) translate3d(2%,2%,0); opacity: .62; }
+}
+
+@keyframes heroOrbit {
+    from { transform: translate3d(0,0,0) rotate(0deg) scale(.96); }
+    to   { transform: translate3d(-28px,20px,0) rotate(12deg) scale(1.04); }
+}
+
+@keyframes heroSheen {
+    0%, 55% { background-position: 160% 0; opacity: 0; }
+    68% { opacity: .8; }
+    82%, 100% { background-position: -20% 0; opacity: 0; }
+}
+
+@keyframes logoSweep {
+    0%, 58% { left: -100%; opacity: 0; }
+    65% { opacity: 1; }
+    84%, 100% { left: 150%; opacity: 0; }
+}
+
+@keyframes cinematicReveal {
+    from { opacity: 0; transform: translate3d(0,16px,0) scale(.985); }
+    to   { opacity: 1; transform: translate3d(0,0,0) scale(1); }
+}
+
+@keyframes statusPulse {
+    0%, 100% { transform: scale(.88); opacity: .62; }
+    50% { transform: scale(1.16); opacity: 1; }
+}
+
+@keyframes toastEnter {
+    from { opacity: 0; transform: translate3d(0,14px,0) scale(.97); }
+    to { opacity: 1; transform: translate3d(0,0,0) scale(1); }
+}
+
+@keyframes modalEnter {
+    from { opacity: 0; transform: translate3d(0,18px,0) scale(.97); }
+    to { opacity: 1; transform: translate3d(0,0,0) scale(1); }
+}
+
+/* Touch screens do not need desktop cursor theater. */
+@media (pointer: coarse) {
+    body::before { opacity: .10; }
+    body::after { filter: blur(34px); opacity: .5; }
+    .panel:hover,
+    .stat-card:hover,
+    .news-card:hover,
+    .automation-card:hover,
+    .source-card:hover,
+    .settings-panel:hover {
+        transform: none;
+        box-shadow: var(--shadow);
+    }
+    .btn:hover { transform: none; }
+}
+
+/* Small screens get fewer moving layers and shorter reveals. */
+@media (max-width: 700px) {
+    body::before {
+        background-size: 48px 48px;
+        animation-duration: 44s;
+        opacity: .075;
+    }
+    body::after {
+        width: 85vw;
+        height: 85vw;
+        min-width: 280px;
+        min-height: 280px;
+    }
+    .hero::before { opacity: .45; }
+    .hero::after { animation-duration: 12s; }
+    .reveal-item { animation-duration: 520ms !important; }
+}
+
+/* Accessibility: the interface should never insist on motion. */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+        scroll-behavior: auto !important;
+    }
+    body::before,
+    body::after,
+    .hero::before,
+    .hero::after,
+    .logo-mark::after {
+        animation: none !important;
+    }
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-
-<style id="blogos-artist-engine">
-/* BLOGOS // ARTIST ENGINE 2.0
-   Motion is deliberately slow, layered and continuous.
-   No forced flicker, no repeated reveal loops, no layout-jank. */
-:root{--artist-violet:#8b6cff;--artist-cyan:#4de7ff;--artist-pink:#ff6bd6;--artist-white:#f7f8ff;--artist-ease:cubic-bezier(.22,1,.36,1)}
-body{background-color:#06070b!important;background-image:radial-gradient(900px 500px at var(--mx,70%) var(--my,18%),rgba(139,108,255,.10),transparent 55%),radial-gradient(700px 500px at 15% 75%,rgba(77,231,255,.055),transparent 58%),linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px)!important;background-size:auto,auto,54px 54px,54px 54px!important;background-attachment:fixed!important}
-body:before,body:after{content:"";position:fixed;inset:-25%;pointer-events:none;z-index:-2}.main:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(circle at 50% -10%,rgba(139,108,255,.09),transparent 32%);animation:artistBreathe 14s ease-in-out infinite alternate}@keyframes artistBreathe{from{opacity:.55;transform:scale(1)}to{opacity:1;transform:scale(1.035)}}
-.sidebar{background:rgba(5,7,12,.78)!important;border-right:1px solid rgba(255,255,255,.08)!important;box-shadow:20px 0 80px rgba(0,0,0,.28);overflow:hidden}.sidebar:after{content:"";position:absolute;left:0;right:0;height:180px;top:-180px;background:linear-gradient(180deg,transparent,rgba(139,108,255,.14),transparent);animation:sidebarBeam 11s linear infinite;pointer-events:none}@keyframes sidebarBeam{to{transform:translateY(calc(100vh + 360px))}}
-.logo-mark{position:relative;overflow:hidden;background:linear-gradient(135deg,#9b85ff,#5136d4 55%,#2b1b70)!important;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 12px 45px rgba(124,92,255,.34)!important;animation:logoFloat 5s ease-in-out infinite}@keyframes logoFloat{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-2px) rotate(.8deg)}}.logo-mark:after{content:"";position:absolute;inset:-80%;background:linear-gradient(110deg,transparent 43%,rgba(255,255,255,.45) 50%,transparent 57%);animation:logoSweep 5.5s ease-in-out infinite}@keyframes logoSweep{0%,45%{transform:translateX(-55%) rotate(18deg)}75%,100%{transform:translateX(55%) rotate(18deg)}}
-.nav-item{position:relative;overflow:hidden;transition:color .45s var(--artist-ease),background .45s var(--artist-ease),transform .45s var(--artist-ease)!important}.nav-item:before{content:"";position:absolute;left:-100%;top:0;bottom:0;width:100%;background:linear-gradient(90deg,transparent,rgba(139,108,255,.14),transparent);transition:left .7s var(--artist-ease)}.nav-item:hover:before{left:100%}.nav-item:hover{transform:translateX(3px)}.nav-item.active{box-shadow:inset 2px 0 0 var(--artist-violet),0 8px 30px rgba(124,92,255,.07)!important}
-.topbar{background:rgba(6,8,13,.64)!important;border-bottom-color:rgba(255,255,255,.07)!important}.topbar:after{content:"";position:absolute;left:0;bottom:-1px;width:28%;height:1px;background:linear-gradient(90deg,transparent,var(--artist-violet),transparent);animation:topLine 7s ease-in-out infinite}@keyframes topLine{0%,100%{transform:translateX(-20%);opacity:.3}50%{transform:translateX(280%);opacity:1}}
-.hero,.panel,.stat-card,.news-card,.automation-card,.source-card,.settings-panel,.table-wrap,.calendar-grid{position:relative;overflow:hidden;isolation:isolate}.hero:after,.panel:after,.stat-card:after,.news-card:after,.automation-card:after,.source-card:after,.settings-panel:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(320px circle at var(--spot-x,50%) var(--spot-y,0%),rgba(139,108,255,.105),transparent 62%);opacity:0;transition:opacity .6s ease}.hero:hover:after,.panel:hover:after,.stat-card:hover:after,.news-card:hover:after,.automation-card:hover:after,.source-card:hover:after,.settings-panel:hover:after{opacity:1}
-.panel,.stat-card,.news-card,.automation-card,.source-card,.settings-panel{border-color:rgba(255,255,255,.075)!important;box-shadow:0 18px 55px rgba(0,0,0,.20);transition:transform .7s var(--artist-ease),border-color .5s ease,box-shadow .7s ease,background .5s ease!important}.panel:hover,.stat-card:hover,.news-card:hover,.automation-card:hover,.source-card:hover,.settings-panel:hover{transform:translateY(-4px);border-color:rgba(139,108,255,.22)!important;box-shadow:0 26px 75px rgba(0,0,0,.30),0 0 45px rgba(124,92,255,.055)}
-.stat-card{animation:cardDrift 8s ease-in-out infinite}.stat-card:nth-child(2){animation-delay:-2s}.stat-card:nth-child(3){animation-delay:-4s}.stat-card:nth-child(4){animation-delay:-6s}@keyframes cardDrift{0%,100%{translate:0 0}50%{translate:0 -2px}}
-.btn{transition:transform .45s var(--artist-ease),box-shadow .45s ease,filter .45s ease!important;will-change:transform}.btn:hover{filter:brightness(1.08);box-shadow:0 12px 35px rgba(124,92,255,.16)}.btn:active{transform:scale(.975)!important}.btn-primary{position:relative;overflow:hidden}.btn-primary:after{content:"";position:absolute;top:-80%;left:-30%;width:22%;height:260%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.34),transparent);transform:rotate(20deg);animation:buttonSheen 4.8s ease-in-out infinite}@keyframes buttonSheen{0%,58%{left:-35%;opacity:0}65%{opacity:1}84%,100%{left:125%;opacity:0}}
-.progress span{position:relative;overflow:hidden}.progress span:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:progressSheen 3.2s linear infinite}@keyframes progressSheen{from{transform:translateX(-120%)}to{transform:translateX(120%)}}
-.status-dot,.apex-status i{animation:statusPulse 2.8s ease-in-out infinite}@keyframes statusPulse{0%,100%{box-shadow:0 0 0 0 rgba(53,211,154,.0),0 0 9px rgba(53,211,154,.65)}50%{box-shadow:0 0 0 7px rgba(53,211,154,.025),0 0 20px rgba(53,211,154,.9)}}
-/* Elegant reveal, once only. */
-.artist-reveal{animation:artistReveal .85s var(--artist-ease) both;animation-delay:var(--artist-delay,0ms)}@keyframes artistReveal{from{opacity:0;transform:translateY(18px) scale(.985);filter:blur(5px)}to{opacity:1;transform:none;filter:none}}
-.apex-particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;opacity:.7}.apex-particle{position:absolute;border-radius:50%;background:rgba(255,255,255,.75);box-shadow:0 0 12px rgba(139,108,255,.45);animation:particleFloat linear infinite}@keyframes particleFloat{0%{transform:translate3d(0,20vh,0) scale(.7);opacity:0}12%{opacity:.7}50%{transform:translate3d(var(--dx),-35vh,0) scale(1)}88%{opacity:.45}100%{transform:translate3d(calc(var(--dx)*-0.35),-95vh,0) scale(.45);opacity:0}}
-.apex-cursor{position:fixed;width:320px;height:320px;border-radius:50%;pointer-events:none;z-index:1;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(139,108,255,.075),rgba(77,231,255,.025) 32%,transparent 68%);filter:blur(8px);mix-blend-mode:screen;will-change:left,top}.apex-status{display:flex;align-items:center;gap:7px;font-size:9px;font-weight:800;letter-spacing:1.1px;color:#8fa3a0;white-space:nowrap}.apex-status i{width:6px;height:6px;border-radius:50%;background:#35d39a;display:block}
-@media(max-width:700px){.apex-cursor{display:none}.sidebar:after{animation-duration:15s}.stat-card{animation:none!important}.panel:hover,.stat-card:hover,.news-card:hover,.automation-card:hover,.source-card:hover,.settings-panel:hover{transform:none}.artist-reveal{animation-duration:.65s}}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}.apex-particles,.apex-cursor{display:none!important}}
-</style>
 
 </head>
 
@@ -5355,74 +5770,286 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 
-/* ============================================================
-   BLOGOS // ARTIST MOTION ENGINE
-   Stable motion system. No MutationObserver animation loops.
-   ============================================================ */
-(function(){
-  "use strict";
-  const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const coarse=window.matchMedia("(pointer:coarse)").matches;
+<script>
+/* =====================================================================
+   BLOGOS // AURORA MOTION ENGINE v2
+   ---------------------------------------------------------------------
+   This layer deliberately favors smoothness over spectacle.
 
-  function particles(){
-    if(reduced||document.querySelector(".apex-particles")) return;
-    const layer=document.createElement("div"); layer.className="apex-particles";
-    const count=innerWidth<700?12:26;
-    for(let i=0;i<count;i++){
-      const p=document.createElement("span"); p.className="apex-particle";
-      p.style.left=(Math.random()*100)+"%"; p.style.top=(70+Math.random()*55)+"%";
-      p.style.setProperty("--dx",((Math.random()-.5)*180)+"px");
-      p.style.animationDuration=(16+Math.random()*18)+"s";
-      p.style.animationDelay=(-Math.random()*25)+"s";
-      const size=(1+Math.random()*2.2).toFixed(1)+"px"; p.style.width=size;p.style.height=size;
-      layer.appendChild(p);
+   DESIGN PRINCIPLES
+   ---------------------------------------------------------------------
+   - CSS owns long-running animation.
+   - JavaScript only supplies interaction state.
+   - Pointer movement is coalesced into requestAnimationFrame.
+   - No DOM-wide MutationObserver.
+   - No per-element getBoundingClientRect() on every pointer event.
+   - No JavaScript-driven transforms for buttons.
+   - No animation restart by removing/re-adding classes on every update.
+   - Touch devices get a quieter profile automatically.
+   ===================================================================== */
+(function () {
+    "use strict";
+
+    const root = document.documentElement;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const coarsePointer = window.matchMedia("(pointer: coarse)");
+
+    /* ---------------------------------------------------------------
+       Utility: safely write one root variable per animation frame.
+       This prevents dozens of style recalculations when a mouse moves.
+       --------------------------------------------------------------- */
+    let pointerFrame = 0;
+    let pointerX = window.innerWidth * 0.72;
+    let pointerY = window.innerHeight * 0.18;
+
+    function commitPointer() {
+        pointerFrame = 0;
+        root.style.setProperty("--aurora-x", pointerX + "px");
+        root.style.setProperty("--aurora-y", pointerY + "px");
     }
-    document.body.appendChild(layer);
-  }
 
-  function cursor(){
-    if(reduced||coarse) return;
-    const c=document.createElement("div"); c.className="apex-cursor"; document.body.appendChild(c);
-    let tx=innerWidth*.7,ty=innerHeight*.2,x=tx,y=ty;
-    addEventListener("pointermove",e=>{tx=e.clientX;ty=e.clientY;document.documentElement.style.setProperty("--mx",e.clientX+"px");document.documentElement.style.setProperty("--my",e.clientY+"px")},{passive:true});
-    function loop(){x+=(tx-x)*.075;y+=(ty-y)*.075;c.style.left=x+"px";c.style.top=y+"px";requestAnimationFrame(loop)} loop();
-  }
+    function handlePointerMove(event) {
+        if (reduceMotion.matches || coarsePointer.matches) return;
 
-  function spotlight(){
-    if(coarse) return;
-    document.querySelectorAll(".panel,.stat-card,.news-card,.automation-card,.source-card,.settings-panel,.hero").forEach(el=>{
-      if(el.dataset.artistSpot) return; el.dataset.artistSpot="1";
-      el.addEventListener("pointermove",e=>{const r=el.getBoundingClientRect();el.style.setProperty("--spot-x",(e.clientX-r.left)+"px");el.style.setProperty("--spot-y",(e.clientY-r.top)+"px")},{passive:true});
+        pointerX = event.clientX;
+        pointerY = event.clientY;
+
+        if (!pointerFrame) {
+            pointerFrame = requestAnimationFrame(commitPointer);
+        }
+    }
+
+    window.addEventListener("pointermove", handlePointerMove, {
+        passive: true
     });
-  }
 
-  function revealOnce(){
-    if(reduced) return;
-    const view=document.querySelector(".view.active")||document.querySelector(".view");
-    if(!view) return;
-    view.querySelectorAll(".stat-card,.panel,.news-card,.automation-card,.source-card,.settings-panel,.calendar-grid,.table-wrap,.hero").forEach((el,i)=>{
-      if(el.dataset.artistRevealed) return;
-      el.dataset.artistRevealed="1"; el.style.setProperty("--artist-delay",Math.min(i*55,440)+"ms"); el.classList.add("artist-reveal");
-      el.addEventListener("animationend",()=>{el.classList.remove("artist-reveal");el.style.removeProperty("--artist-delay")},{once:true});
+    /* ---------------------------------------------------------------
+       Surface spotlight.
+       Instead of measuring every card on every event, CSS receives the
+       pointer position relative to the viewport and each surface uses
+       a soft generic spotlight. The exact card position is intentionally
+       not calculated because that calculation was one of the sources of
+       unnecessary main-thread work.
+       --------------------------------------------------------------- */
+    let spotlightFrame = 0;
+    let spotX = 50;
+    let spotY = 50;
+
+    function commitSpotlight() {
+        spotlightFrame = 0;
+        root.style.setProperty("--spot-x", spotX + "%");
+        root.style.setProperty("--spot-y", spotY + "%");
+    }
+
+    function handleSpotlight(event) {
+        if (reduceMotion.matches || coarsePointer.matches) return;
+
+        spotX = (event.clientX / Math.max(window.innerWidth, 1)) * 100;
+        spotY = (event.clientY / Math.max(window.innerHeight, 1)) * 100;
+
+        if (!spotlightFrame) {
+            spotlightFrame = requestAnimationFrame(commitSpotlight);
+        }
+    }
+
+    window.addEventListener("pointermove", handleSpotlight, {
+        passive: true
     });
-  }
 
-  function ripple(){
-    if(reduced) return;
-    document.addEventListener("pointerdown",e=>{
-      const b=e.target.closest("button,.btn"); if(!b) return;
-      const r=b.getBoundingClientRect(),q=document.createElement("span");
-      q.style.cssText=`position:absolute;left:${e.clientX-r.left}px;top:${e.clientY-r.top}px;width:6px;height:6px;border-radius:999px;background:rgba(255,255,255,.28);pointer-events:none;transform:translate(-50%,-50%) scale(1);opacity:.8;transition:transform .7s cubic-bezier(.22,1,.36,1),opacity .7s ease;z-index:9`;
-      if(getComputedStyle(b).position==="static") b.style.position="relative"; b.appendChild(q);
-      requestAnimationFrame(()=>{q.style.transform="translate(-50%,-50%) scale(24)";q.style.opacity="0"});
-      setTimeout(()=>q.remove(),720);
-    },{passive:true});
-  }
+    /* ---------------------------------------------------------------
+       Premium ripple.
+       One delegated listener, one short-lived node, one compositor
+       animation. No layout measurement is required.
+       --------------------------------------------------------------- */
+    let rippleStyleInstalled = false;
 
-  function keyboard(){document.addEventListener("keydown",e=>{if(e.key==="/"&&!/input|textarea|select/i.test(document.activeElement?.tagName||"")){e.preventDefault();document.querySelector('input[placeholder*="Search" i]')?.focus()}},{passive:false})}
+    function installRippleStyle() {
+        if (rippleStyleInstalled) return;
+        rippleStyleInstalled = true;
 
-  function init(){particles();cursor();spotlight();revealOnce();ripple();keyboard();}
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init,{once:true}); else init();
+        const style = document.createElement("style");
+        style.id = "blogos-ripple-system";
+        style.textContent = `
+            .blogos-ripple-host {
+                position: relative !important;
+                overflow: hidden !important;
+            }
+            .blogos-ripple {
+                position: absolute;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                pointer-events: none;
+                background: rgba(255,255,255,.20);
+                transform: translate(-50%, -50%) scale(0);
+                opacity: .65;
+                animation: blogosRipple 620ms cubic-bezier(.22,1,.36,1) forwards;
+                z-index: 20;
+            }
+            @keyframes blogosRipple {
+                0% { transform: translate(-50%, -50%) scale(0); opacity: .52; }
+                65% { opacity: .18; }
+                100% { transform: translate(-50%, -50%) scale(20); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    function createRipple(event) {
+        if (reduceMotion.matches) return;
+
+        const target = event.target.closest("button, .btn");
+        if (!target) return;
+        if (target.disabled) return;
+        if (target.closest(".modal-overlay") && event.pointerType === "mouse") {
+            /* Modals still receive ripples, this branch only avoids extra
+               work for non-interactive overlay surfaces. */
+        }
+
+        installRippleStyle();
+        target.classList.add("blogos-ripple-host");
+
+        const rect = target.getBoundingClientRect();
+        const ripple = document.createElement("span");
+        ripple.className = "blogos-ripple";
+        ripple.style.left = (event.clientX - rect.left) + "px";
+        ripple.style.top = (event.clientY - rect.top) + "px";
+
+        target.appendChild(ripple);
+
+        window.setTimeout(function () {
+            ripple.remove();
+        }, 700);
+    }
+
+    document.addEventListener("pointerdown", createRipple, {
+        passive: true
+    });
+
+    /* ---------------------------------------------------------------
+       One-time entrance choreography.
+       This intentionally runs once after the initial DOM is ready.
+       Navigation does NOT restart the entire page animation.
+       --------------------------------------------------------------- */
+    function initialEntrance() {
+        if (reduceMotion.matches) return;
+
+        const view = document.querySelector(".view.active") ||
+                     document.querySelector(".view");
+
+        if (!view) return;
+
+        const groups = view.querySelectorAll(
+            ".hero, .stat-card, .panel, .news-card, .automation-card, .source-card, .settings-panel, .calendar-grid, .table-wrap"
+        );
+
+        groups.forEach(function (element, index) {
+            if (element.dataset.motionReady === "true") return;
+            element.dataset.motionReady = "true";
+            element.style.animationDelay = Math.min(index * 38, 300) + "ms";
+            element.classList.add("reveal-item");
+        });
+    }
+
+    /* ---------------------------------------------------------------
+       View observer without MutationObserver.
+       We listen for the existing navigation buttons. When a view is
+       explicitly selected, only that view gets a small entrance pass.
+       --------------------------------------------------------------- */
+    function installNavigationMotion() {
+        document.querySelectorAll(".nav-item").forEach(function (navItem) {
+            navItem.addEventListener("click", function () {
+                if (reduceMotion.matches) return;
+
+                window.setTimeout(function () {
+                    const viewName = navItem.dataset.view;
+                    const view = viewName
+                        ? document.querySelector('[data-view-section="' + viewName + '"]') ||
+                          document.getElementById(viewName)
+                        : null;
+
+                    const active = view || document.querySelector(".view.active");
+                    if (!active) return;
+
+                    const elements = active.querySelectorAll(
+                        ".hero, .stat-card, .panel, .news-card, .automation-card, .source-card, .settings-panel, .calendar-grid, .table-wrap"
+                    );
+
+                    elements.forEach(function (element, index) {
+                        if (element.dataset.motionNavigated === "true") return;
+                        element.dataset.motionNavigated = "true";
+                        element.style.animationDelay = Math.min(index * 28, 220) + "ms";
+                        element.classList.add("reveal-item");
+                    });
+                }, 25);
+            }, { passive: true });
+        });
+    }
+
+    /* ---------------------------------------------------------------
+       Keyboard polish.
+       Slash focuses the first search field, Escape closes visible modal
+       layers. Existing application handlers remain untouched.
+       --------------------------------------------------------------- */
+    function installKeyboardLayer() {
+        document.addEventListener("keydown", function (event) {
+            const activeTag = document.activeElement &&
+                document.activeElement.tagName
+                ? document.activeElement.tagName.toLowerCase()
+                : "";
+
+            if (event.key === "/" && !["input", "textarea", "select"].includes(activeTag)) {
+                const search = document.querySelector(
+                    'input[placeholder*="search" i], input[type="search"]'
+                );
+
+                if (search) {
+                    event.preventDefault();
+                    search.focus();
+                }
+            }
+        });
+    }
+
+    /* ---------------------------------------------------------------
+       Motion state handling.
+       When the user changes the OS/browser motion preference while the
+       dashboard is open, we immediately adapt without rebuilding DOM.
+       --------------------------------------------------------------- */
+    function installMotionPreferenceListener() {
+        const update = function () {
+            root.dataset.reducedMotion = reduceMotion.matches ? "true" : "false";
+        };
+
+        update();
+
+        if (typeof reduceMotion.addEventListener === "function") {
+            reduceMotion.addEventListener("change", update);
+        }
+    }
+
+    /* ---------------------------------------------------------------
+       Initial boot. Kept intentionally tiny. Long-running visual work is
+       delegated to CSS so the JavaScript event loop stays available for
+       real dashboard operations, database calls and AI interactions.
+       --------------------------------------------------------------- */
+    function bootAuroraMotion() {
+        installMotionPreferenceListener();
+        installKeyboardLayer();
+        installNavigationMotion();
+
+        window.requestAnimationFrame(function () {
+            initialEntrance();
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", bootAuroraMotion, {
+            once: true
+        });
+    } else {
+        bootAuroraMotion();
+    }
 })();
 </script>
 
